@@ -6,7 +6,6 @@ from discord_components import DiscordComponents, Button, ButtonStyle
 import qr_code
 import youtube_dl
 import os
-from random import randint
 
 bot = commands.Bot(command_prefix='{{', intents=discord.Intents.all())
 # Сброс команды
@@ -73,24 +72,6 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-# Вывод команд используемых на сервере
-@bot.command(pass_context=True)
-async def private(ctx):
-    # Создание таблички
-    embed = discord.Embed(title='Команды администратора:',
-                          color=discord.Color.random(),
-                          )
-    embed.set_image(
-        url='https://www.open-vision.ru/images/cover-02_1433258478-630x315.png.webp')
-    embed.add_field(name='{{clear', value='💭➡️🗑️')
-    embed.add_field(name='{{kick', value='Наказание')
-    embed.add_field(name='{{ban', value='Черный список')
-    embed.add_field(name='{{unban', value='Белый список')
-    embed.add_field(name='{{off', value='Выключение бота')
-
-    await ctx.send(embed=embed)
-
-
 # Информация о сервре
 @bot.command()
 async def server(ctx):
@@ -116,32 +97,6 @@ async def server(ctx):
     embed.add_field(name='ID Сервера:', value=id, inline=True)
     embed.add_field(name='Подписчки:', value=member_count, inline=True)
     await ctx.send(embed=embed)
-
-
-# Отчистка сообщений
-@bot.command(pass_context=True)
-@commands.has_permissions(administrator=True)
-# Ограничение роли
-# amount=number ограгиченое количество при этом можно использовать просто {{clear
-# amount: int неограниченое количество сколько просишь столько и отчистит
-async def clear(ctx, amount: int):
-    # Лимит удаляемых сообщений завасити от числа, которое мы задаем
-    await ctx.channel.purge(limit=amount)
-
-
-# Сообщение для пользователя о необходимости использования аргументов
-@clear.error
-async def clear_error(ctx, error):
-    # Ошибка commands.MissingPermissions - появляется при недоси=таточном кол-ве прав у пользователя, который вызывает эту команду
-    # Ошибка commands.MissingRequiredArgument - появляется, когда в методе вызова команды не нашелся аргумент
-    if isinstance(error, commands.MissingPermissions):
-        # Сообщение для пользователя что у него недостаточно прав
-        await ctx.send(
-            f'{ctx.author.mention}, у вас недостаточно прав для использования этой команды!')
-
-    if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(
-            f'{ctx.author.mention}, вы забыли указать количество через пробел!')
 
 
 # Выход на поисковик google
@@ -279,7 +234,7 @@ async def leave(ctx):
 
 
 # Игра
-@bot.command(pass_context=True, aliases=['g', 'ga', 'gam'])
+@bot.command(pass_context=True)
 @commands.guild_only()
 async def game(ctx):
     # Вывод сообщения
@@ -354,6 +309,50 @@ async def random(ctx):
         title=f'✅ Рандомное число - {randint(0, 1000000)}')
     # Вывод рандомного числа
     await ctx.send(embed=embed)
+
+
+# Вывод команд используемых администратором
+@bot.command(pass_context=True)
+async def private(ctx):
+    # Создание таблички
+    embed = discord.Embed(title='Команды администратора:',
+                          color=discord.Color.random(),
+                          )
+    embed.set_image(
+        url='https://www.open-vision.ru/images/cover-02_1433258478-630x315.png.webp')
+    embed.add_field(name='{{clear', value='💭➡️🗑️')
+    embed.add_field(name='{{kick', value='Наказание')
+    embed.add_field(name='{{ban', value='Черный список')
+    embed.add_field(name='{{unban', value='Белый список')
+    embed.add_field(name='{{off', value='Выключение бота')
+
+    await ctx.send(embed=embed)
+
+
+# Отчистка сообщений
+@bot.command(pass_context=True)
+@commands.has_permissions(administrator=True)
+# Ограничение роли
+# amount=number ограгиченое количество при этом можно использовать просто {{clear
+# amount: int неограниченое количество сколько просишь столько и отчистит
+async def clear(ctx, amount: int):
+    # Лимит удаляемых сообщений завасити от числа, которое мы задаем
+    await ctx.channel.purge(limit=amount)
+
+
+# Сообщение для пользователя о необходимости использования аргументов
+@clear.error
+async def clear_error(ctx, error):
+    # Ошибка commands.MissingPermissions - появляется при недоси=таточном кол-ве прав у пользователя, который вызывает эту команду
+    # Ошибка commands.MissingRequiredArgument - появляется, когда в методе вызова команды не нашелся аргумент
+    if isinstance(error, commands.MissingPermissions):
+        # Сообщение для пользователя что у него недостаточно прав
+        await ctx.send(
+            f'{ctx.author.mention}, у вас недостаточно прав для использования этой команды!')
+
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(
+            f'{ctx.author.mention}, вы забыли указать количество через пробел!')
 
 
 # Кик пользователя
@@ -459,7 +458,7 @@ async def on_member_remove(member):
 
 # Асинхронный метод реализующий команду аварийной остановки бота
 @bot.command(pass_context=True)
-@commands.has_permissions(administrator = True)
+@commands.has_permissions(administrator=True)
 async def off(ctx):
     # Подтверждение что вышел из сети
     print('We have went out as {0.user}'.format(bot))
@@ -471,6 +470,7 @@ async def off(ctx):
 @off.error
 async def off_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send(f'{ctx.author.name}, у вас недостаточно прав для использования этой команды !!!')
+        await ctx.send(f'{ctx.author.mention}, у вас недостаточно прав для использования этой команды !!!')
 
-bot.run('OTIyMTE4MDY2MDIyNzc2ODky.Yb8zXw.zwX9up3HOPx-YuTEWK-_LQ3Qmi8')
+
+bot.run('OTIyMTE4MDY2MDIyNzc2ODky.Yb8zXw.Pu54FohetMwCLwbZLcaAKfqdATk')
